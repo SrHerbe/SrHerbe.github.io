@@ -59,7 +59,7 @@ function procesarDatos() {
 
 function generarTabla(obras) {
     const tbody = document.querySelector("#resultTable tbody");
-    tbody.innerHTML = "";
+    tbody.innerHTML = ""; 
 
     let totalFacturacionRealEmitida = 0;
 
@@ -71,20 +71,21 @@ function generarTabla(obras) {
         fila.appendChild(numeroObra);
 
         let estado = document.createElement("td");
-        let esFacturado =
+        let esCerrado =
             obra.facturacionRealEmitida > 0 &&
             obra.deudoresProduccionFacturable === 0;
-        estado.textContent = esFacturado ? "Facturado" : "No Facturado";
+        estado.textContent = esCerrado ? "Cerrado" : "En curso";
         fila.appendChild(estado);
 
-        if (esFacturado) {
-            fila.classList.add("facturado");
-            let importe = document.createElement("td");
-            importe.textContent = obra.facturacionRealEmitida.toFixed(2)+ " €";
-            fila.appendChild(importe);
-
-            totalFacturacionRealEmitida += obra.facturacionRealEmitida;
+        if (esCerrado) {
+            fila.classList.add("cerrado");
         }
+
+        let importe = document.createElement("td");
+        importe.textContent = obra.facturacionRealEmitida.toFixed(2)+ " €";
+        fila.appendChild(importe);
+
+        totalFacturacionRealEmitida += obra.facturacionRealEmitida;
 
         tbody.appendChild(fila);
     }
@@ -97,7 +98,7 @@ function generarTabla(obras) {
     filaTotal.appendChild(celdaTotalTexto);
 
     let celdaTotalValor = document.createElement("td");
-    celdaTotalValor.textContent = totalFacturacionRealEmitida.toFixed(2);
+    celdaTotalValor.textContent = totalFacturacionRealEmitida.toFixed(2)+ " €";
     filaTotal.appendChild(celdaTotalValor);
 
     tbody.appendChild(filaTotal);
