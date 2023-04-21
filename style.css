@@ -3,10 +3,14 @@ table {
     border-collapse: collapse;
 }
 
-td,
-tr {
+td,tr {
     border: 1px solid black;
     padding: 0.5rem;
+}
+
+textarea {
+    width: 90%;
+    height: 200px;
 }
 
 .facturado {
