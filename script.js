@@ -57,9 +57,16 @@ function procesarDatos() {
     generarTabla(obras);
 }
 
+function formatNumber(number) {
+    return number
+        .toFixed(2)
+        .replace(".", ",")
+        .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.") + " €";
+}
+
 function generarTabla(obras) {
     const tbody = document.querySelector("#resultTable tbody");
-    tbody.innerHTML = ""; 
+    tbody.innerHTML = "";
 
     let totalFacturacionRealEmitida = 0;
 
@@ -82,7 +89,7 @@ function generarTabla(obras) {
         }
 
         let importe = document.createElement("td");
-        importe.textContent = obra.facturacionRealEmitida.toFixed(2)+ " €";
+        importe.textContent = formatNumber(obra.facturacionRealEmitida);
         fila.appendChild(importe);
 
         totalFacturacionRealEmitida += obra.facturacionRealEmitida;
@@ -98,7 +105,7 @@ function generarTabla(obras) {
     filaTotal.appendChild(celdaTotalTexto);
 
     let celdaTotalValor = document.createElement("td");
-    celdaTotalValor.textContent = totalFacturacionRealEmitida.toFixed(2)+ " €";
+    celdaTotalValor.textContent = formatNumber(totalFacturacionRealEmitida);
     filaTotal.appendChild(celdaTotalValor);
 
     tbody.appendChild(filaTotal);
