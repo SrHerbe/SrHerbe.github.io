@@ -1,100 +1,87 @@
-function processText() {
+function procesarDatos() {
     const inputText = document.getElementById("inputText").value;
     const lines = inputText.split("\n");
-    const projects = [];
-    let currentProject = null;
 
-    lines.forEach((line) => {
-        const tokens = line.split("\t");
+    let obras = [];
+    let i = 7;
+    const n = lines.length;
+
+    while (i < n) {
         if (
-            tokens.length > 1 &&
-            /^\d/.test(tokens[1]) &&
-            tokens[1].length === 9
+            lines[i].startsWith("|   ") &&
+            lines[i].length >= 9 &&
+            lines[i].substring(4, 13).match(/[A-Z0-9]{2,}-[0-9]{4}/)
         ) {
-            if (currentProject) {
-                projects.push(currentProject);
-            }
-            const projectNumber = tokens[1].replace(/^[A-Z0-9]{4}-/, "XG.");
-            currentProject = { obra: projectNumber };
-        } else if (currentProject) {
-            if (line.includes("Real Emitida")) {
-                currentProject.facturacionRealEmitida = parseFloat(
-                    line.split("\t").pop().replace(".", "").replace(",", ".")
-                );
-            } else if (line.includes("Deudores")) {
-                currentProject.deudoresProduccionFacturable = parseFloat(
-                    line.split("\t").pop().replace(".", "").replace(",", ".")
-                );
-            }
-        }
-    });
+            let obra = {
+                numero: `XG.${lines[i].substring(8, 13)}`,
+                facturacionRealEmitida: 0,
+                deudoresProduccionFacturable: 0,
+            };
 
-    if (currentProject) {
-        projects.push(currentProject);
+            while (!lines[i].startsWith("---") && i < n) {
+                if (lines[i].startsWith("|   Facturación Real Emitida")) {
+                    obra.facturacionRealEmitida = parseFloat(
+                        lines[i]
+                            .match(/[\d,.]+/g)[2]
+                            .replace(".", "")
+                            .replace(",", ".")
+                    );
+                } else if (
+                    lines[i].startsWith("|   Deudores Producción Facturable")
+                ) {
+                    obra.deudoresProduccionFacturable = parseFloat(
+                        lines[i]
+                            .match(/[\d,.]+/g)[2]
+                            .replace(".", "")
+                            .replace(",", ".")
+                    );
+                }
+
+                i++;
+            }
+
+            obras.push(obra);
+        } else {
+            i++;
+        }
     }
 
-    // Ordenar proyectos por número de obra
-    projects.sort((a, b) => {
-        const numA = parseInt(a.obra.split(".")[1], 10);
-        const numB = parseInt(b.obra.split(".")[1], 10);
-        return numA - numB;
+    console.log(obras);
+
+    obras.sort((a, b) => {
+        const numeroA = parseInt(a.numero.slice(-4));
+        const numeroB = parseInt(b.numero.slice(-4));
+        return numeroB - numeroA;
     });
 
-    createTable(projects);
+    generarTabla(obras);
 }
 
-function createTable(projects) {
-    const output = document.getElementById("output");
-    output.innerHTML = "";
+function generarTabla(obras) {
+    const tbody = document.querySelector("#resultTable tbody");
+    tbody.innerHTML = "";
 
-    const table = document.createElement("table");
-    const headerRow = document.createElement("tr");
+    for (const obra of obras) {
+        let fila = document.createElement("tr");
 
-    const obraHeader = document.createElement("th");
-    obraHeader.textContent = "Obra";
-    headerRow.appendChild(obraHeader);
+        let numeroObra = document.createElement("td");
+        numeroObra.textContent = obra.numero;
+        fila.appendChild(numeroObra);
 
-    const statusHeader = document.createElement("th");
-    statusHeader.textContent = "Estado";
-    headerRow.appendChild(statusHeader);
+        let estado = document.createElement("td");
+        let esFacturado =
+            obra.facturacionRealEmitida > 0 &&
+            obra.deudoresProduccionFacturable === 0;
+        estado.textContent = esFacturado ? "Facturado" : "No Facturado";
+        fila.appendChild(estado);
 
-    // Agregar nueva columna "Importe"
-    const importeHeader = document.createElement("th");
-    importeHeader.textContent = "Importe";
-    headerRow.appendChild(importeHeader);
-
-    table.appendChild(headerRow);
-
-    projects.forEach((project) => {
-        const row = document.createElement("tr");
-        const obraCell = document.createElement("td");
-        const statusCell = document.createElement("td");
-        const importeCell = document.createElement("td");
-
-        obraCell.textContent = project.obra;
-
-        if (
-            project.facturacionRealEmitida > 0 &&
-            project.deudoresProduccionFacturable === 0
-        ) {
-            statusCell.textContent = "FACTURADO";
-            row.classList.add("facturado");
-
-            // Mostrar importe solo si la obra está facturada
-            importeCell.textContent = project.facturacionRealEmitida.toFixed(2)+" €";
-        } else {
-            statusCell.textContent = "NO FACTURADO";
-            row.classList.add("no-facturado");
-
-            // Dejar la celda vacía si la obra no está facturada
-            importeCell.textContent = "";
+        if (esFacturado) {
+            fila.classList.add("facturado");
+            let importe = document.createElement("td");
+            importe.textContent = obra.facturacionRealEmitida.toFixed(2)+ " €";
+            fila.appendChild(importe);
         }
 
-        row.appendChild(obraCell);
-        row.appendChild(statusCell);
-        row.appendChild(importeCell); // Agregar la celda "Importe" a la fila
-        table.appendChild(row);
-    });
-
-    output.appendChild(table);
+        tbody.appendChild(fila);
+    }
 }
