@@ -14,12 +14,22 @@ function procesarDatos() {
         ) {
             let obra = {
                 numero: `XG.${lines[i].substring(8, 13)}`,
+                descripcion: lines[i].substring(13, 62).trim(),
+                cliente: lines[i].substring(62, 110).trim(),
+                totalCostes: 0,
                 facturacionRealEmitida: 0,
                 deudoresProduccionFacturable: 0,
             };
 
             while (!lines[i].startsWith("---") && i < n) {
-                if (lines[i].startsWith("|   Facturación Real Emitida")) {
+                if (lines[i].startsWith("|   Total Costes")) {
+                    obra.totalCostes = parseFloat(
+                        lines[i]
+                            .match(/[\d,.]+/g)[2]
+                            .replace(".", "")
+                            .replace(",", ".")
+                    );
+                } else if (lines[i].startsWith("|   Facturación Real Emitida")) {
                     obra.facturacionRealEmitida = parseFloat(
                         lines[i]
                             .match(/[\d,.]+/g)[2]
@@ -73,10 +83,22 @@ function generarTabla(obras) {
     for (const obra of obras) {
         let fila = document.createElement("tr");
 
+        // Número de obra
         let numeroObra = document.createElement("td");
         numeroObra.textContent = obra.numero;
         fila.appendChild(numeroObra);
 
+        // Cliente
+        let cliente = document.createElement("td");
+        cliente.textContent = obra.cliente;
+        fila.appendChild(cliente);
+
+        // Descripción
+        let descripcion = document.createElement("td");
+        descripcion.textContent = obra.descripcion;
+        fila.appendChild(descripcion);
+
+        // Estado
         let estado = document.createElement("td");
         let esCerrado =
             obra.facturacionRealEmitida > 0 &&
@@ -84,15 +106,22 @@ function generarTabla(obras) {
         estado.textContent = esCerrado ? "Cerrado" : "En curso";
         fila.appendChild(estado);
 
-        if (esCerrado) {
-            fila.classList.add("cerrado");
-        }
+        // Coste
+        let coste = document.createElement("td");
+        coste.textContent = formatNumber(obra.totalCostes);
+        fila.appendChild(coste);
 
+        // Facturado
         let importe = document.createElement("td");
         importe.textContent = formatNumber(obra.facturacionRealEmitida);
         fila.appendChild(importe);
 
         totalFacturacionRealEmitida += obra.facturacionRealEmitida;
+
+        // Aplica la clase 'cerrado' a la fila si el estado es "Cerrado"
+        if (esCerrado) {
+            fila.classList.add("cerrado");
+        }
 
         tbody.appendChild(fila);
     }
@@ -100,7 +129,7 @@ function generarTabla(obras) {
     let filaTotal = document.createElement("tr");
 
     let celdaTotalTexto = document.createElement("td");
-    celdaTotalTexto.colSpan = 2;
+    celdaTotalTexto.colSpan = 5;
     celdaTotalTexto.textContent = "TOTAL Facturación Real Emitida:";
     filaTotal.appendChild(celdaTotalTexto);
 
@@ -109,4 +138,16 @@ function generarTabla(obras) {
     filaTotal.appendChild(celdaTotalValor);
 
     tbody.appendChild(filaTotal);
+}
+
+function copiarTabla() {
+    const range = document.createRange();
+    range.selectNode(document.getElementById("resultTable"));
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
 }
