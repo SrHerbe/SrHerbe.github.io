@@ -10,17 +10,24 @@
 <body>
     <h1>Procesador de datos de obras</h1>
     <textarea id="inputText"></textarea><br><br>
-    <button onclick="procesarDatos()">Procesar</button><br><br>
+    <div class="contenedor-btns">
+        <button onclick="procesarDatos()">Procesar</button>
+        <button onclick="copiarTabla()">Copiar</button>
+    </div>
     <table id="resultTable">
         <thead>
             <tr>
                 <th>Número de obra</th>
+                <th>Cliente</th>
+                <th>Descripción</th>
                 <th>Estado</th>
-                <th>Importe</th>
+                <th>Coste</th>
+                <th>Facturado</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
+    <br>
 </body>
 
 <script src="script.js"></script>
