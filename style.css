@@ -17,6 +17,9 @@ textarea {
     background-color: #90f723;
 }
 
-.no-facturado {
-    /* background-color: #ffc000; */
+.contenedor-btns {
+    display: flex;
+    justify-content: space-between;
+    width: 90%;
+    margin-bottom: 2rem;
 }
